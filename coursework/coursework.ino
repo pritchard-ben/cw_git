@@ -16,11 +16,11 @@ Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 struct channel {
   char id;
-  char[16] description;
-  int value = null;
+  char description[16] = "               ";
+  int value = -1;
   int minValue = 0;
   int maxValue = 255;
-}
+};
 
 void setup() {
   lcd.begin(16,2);
@@ -301,8 +301,8 @@ void loop() {
           }
           if(newChannelArray[x].id == newChan.id){
             newChan.value = newChannelArray[x].value;
-            newChan.maxValue = newChannelArray[x].maxVal;
-            newChan.minValue = newChannelArray[x].minVal;
+            newChan.maxValue = newChannelArray[x].maxValue;
+            newChan.minValue = newChannelArray[x].minValue;
             inArray = true;
             for(int y = 2; y < messageLen - 1; y++){
               newChan.description[y-2] = message[y];
@@ -317,8 +317,12 @@ void loop() {
           for (int y = 1; y < messageLen - 1 ; y++){
             newChannel[y-1] = message[y];
           }
+          for (int y = 2; y < messageLen - 1; y++){
+            newChan.description[y-2] = message[y];
+          }
           //Serial.println("DEBUG: " + (String)channelArrayLength);
           channelArray[channelArrayLength] = newChannel;
+          newChannelArray[channelArrayLength] = newChan;
           channelArrayLength ++;
         }
 
@@ -333,12 +337,23 @@ void loop() {
             }
           }
         }
-        /*//prints out he array and ength of the array for debugging purposes
+        //prints out he array and ength of the array for debugging purposes
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + channelArray[x]);
         }
+        for (int x = 0; x < channelArrayLength; x++){
+          Serial.println("DEBUG: " + (String)newChannelArray[x].id);
+          Serial.print("DEBUG: ");
+          for (int y = 0; y<15; y++){
+            Serial.print(newChannelArray[x].description[y]);
+          }
+          Serial.println();
+          Serial.println("DEBUG: " + (String)newChannelArray[x].value);
+          Serial.println("DEBUG: " + (String)newChannelArray[x].maxValue);
+          Serial.println("DEBUG: " + (String)newChannelArray[x].minValue);
+        }
         Serial.println(channelArrayLength);
-        */
+        
         state = WAITING;
         break;
       }
