@@ -337,6 +337,17 @@ void loop() {
             }
           }
         }
+        
+        for (int x = 0; x < channelArrayLength; x++){
+          for (int y = 0; y < channelArrayLength - 1; y++){
+            if (newChannelArray[y].id > newChannelArray[y+1].id){
+              channel tempChan = newChannelArray[y+1];
+              newChannelArray[y+1] = newChannelArray[y];
+              newChannelArray[y] = tempChan;
+            }
+          }
+        }
+        
         //prints out he array and ength of the array for debugging purposes
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + channelArray[x]);
