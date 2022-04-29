@@ -15,11 +15,11 @@
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 struct channel {
-  char ID;
+  char id;
   char[16] description;
-  int value;
-  int minValue;
-  int maxValue;
+  int value = null;
+  int minValue = 0;
+  int maxValue = 255;
 }
 
 void setup() {
@@ -33,6 +33,7 @@ enum state_e { SYNCHRONISATION = 3, INITIALISATION, WAITING, NEW_CHANNEL, VALUE,
 enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for pressing the buttons
 
 static String channelArray[26];//global declaration of the array and the colours for the screen
+static channel newChannelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
 
@@ -277,6 +278,8 @@ void loop() {
         String newChannel = "                     0255";//if not in array use this, if in array overwrite new description
         newChannel[0] = message[1];                     //onto the values stored in the array 
                                                         //-instead of using newChannel, use channelArray[x]
+        channel newChan;
+        newChan.id = message[1];
         //Serial.println("-"+newChannel+"-");
         int messageLen = message.length();
         if (messageLen > 15){ // descriptions longer than 15 characters are ignored
@@ -295,6 +298,17 @@ void loop() {
               newChannel[y-1] = message[y];
             }
             channelArray[x] = newChannel;
+          }
+          if(newChannelArray[x].id == newChan.id){
+            newChan.value = newChannelArray[x].value;
+            newChan.maxValue = newChannelArray[x].maxVal;
+            newChan.minValue = newChannelArray[x].minVal;
+            inArray = true;
+            for(int y = 2; y < messageLen - 1; y++){
+              newChan.description[y-2] = message[y];
+            }
+            newChannelArray[x] = newChan;
+            
           }
         }
 
