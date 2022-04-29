@@ -3,15 +3,11 @@
 #include <utility/Adafruit_MCP23017.h>
 
 //todo:
-//change from using strings to use a new data type for the data
+//rename nVal to newVal etc for val, min, max
+//streamline code
 
 //---------------------------
 
-//can store the data as a string: mem location 0 is id, 1-15 is the description, 16-18 are values, 19-21 is min, 22-24 is max
-//scroll up and down the list with the buttons. 
-//each of the states simply appends data to the correct location in memory for later access
-
-// can implement a class to store the data, may be better
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 struct channel {
