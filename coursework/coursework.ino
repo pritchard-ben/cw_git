@@ -59,14 +59,27 @@ void inMiddle(){
 
 //updates the diaply with current values
 void updateDisplay(int channelArrayLength,int topDisplay){
-  if(channelArrayLength == 1){ // if one value
+  String dispVal;
+  
+  
+  if(channelArrayLength == 1){ // if one value in array
     lcd.setCursor(1,0);
+    if(newChannelArray[topDisplay].value > 99){
+      dispVal = (String)newChannelArray[topDisplay].value;
+    }else if(newChannelArray[topDisplay].value > 9){
+      dispVal =  " " + (String)newChannelArray[topDisplay].value;
+    }else{
+      dispVal = "  " + (String)newChannelArray[topDisplay].value;
+    }
+    Serial.println('-'+dispVal+'-');
     /*Serial.println("DEBUG: " + (String) channelArrayLength);
     Serial.println("DEBUG: " + (String) topDisplay);*/
-    lcd.print(channelArray[topDisplay][0]);
-    lcd.print(channelArray[topDisplay][16]);
-    lcd.print(channelArray[topDisplay][17]);
-    lcd.print(channelArray[topDisplay][18]);
+    lcd.print(newChannelArray[topDisplay].id);
+    if (newChannelArray[topDisplay].value > -1){
+      lcd.print(dispVal);
+    }else{
+      lcd.print("   ");
+    }
     /*
     for (int x = 0; x < channelArrayLength; x++){
       Serial.println("DEBUG: " + channelArray[x]);
@@ -75,16 +88,37 @@ void updateDisplay(int channelArrayLength,int topDisplay){
   }else if(channelArrayLength > 1){ // if two values
     //copy above, but include two lines (topDisplay and topDisplay + 1)
     lcd.setCursor(1,0);
-    lcd.print(channelArray[topDisplay][0]);
-    lcd.print(channelArray[topDisplay][16]);
-    lcd.print(channelArray[topDisplay][17]);
-    lcd.print(channelArray[topDisplay][18]);
+    if(newChannelArray[topDisplay].value > 99){
+      dispVal = (String)newChannelArray[topDisplay].value;
+    }else if(newChannelArray[topDisplay].value > 9){
+      dispVal =  " " + (String)newChannelArray[topDisplay].value;
+    }else{
+      dispVal = "  " + (String)newChannelArray[topDisplay].value;
+    }
+    String dispVal2;
+    if(newChannelArray[topDisplay + 1].value > 99){
+      dispVal2 = (String)newChannelArray[topDisplay + 1].value;
+    }else if(newChannelArray[topDisplay + 1].value > 9){
+      dispVal2 =  " " + (String)newChannelArray[topDisplay + 1].value;
+    }else{
+      dispVal2 = "  " + (String)newChannelArray[topDisplay + 1].value;
+    }
+    lcd.print(newChannelArray[topDisplay].id);
+    if (newChannelArray[topDisplay].value > -1){
+      lcd.print(dispVal);
+    }else{
+      lcd.print("   ");
+    }
     lcd.setCursor(1,1);
-    lcd.print(channelArray[topDisplay + 1][0]);
-    lcd.print(channelArray[topDisplay + 1][16]);
-    lcd.print(channelArray[topDisplay + 1][17]);
-    lcd.print(channelArray[topDisplay + 1][18]);
+    lcd.print(newChannelArray[topDisplay + 1].id);
+    if (newChannelArray[topDisplay + 1].value > -1){
+      lcd.print(dispVal2);
+    }else{
+      lcd.print("   ");
+    }
   }
+
+  
   if (channelArrayLength > 2){ // if more than two values (add v and ^ for scrolling)
     if(topDisplay == 0){//if at top of the list
       atTop();
@@ -111,11 +145,11 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     //Serial.println(channelMin); //debugging these values
     //Serial.println(channelMax);
     //Serial.println(channelVal);
-    if (channelMax >= channelMin){ // determine whether to change the colour of the display, colour will be changed until 5 new values hae been entered
-      if (channelVal != "   "){
-        if (channelVal < channelMin){
+    if (newChannelArray[x].maxValue >= newChannelArray[x].minValue){ // determine whether to change the colour of the display, colour will be changed until 5 new values hae been entered
+      if (newChannelArray[x].value != -1){
+        if (newChannelArray[x].value < newChannelArray[x].minValue){
           screenGreenCount = 5;
-        }else if(channelVal > channelMax){
+        }else if(newChannelArray[x].value > newChannelArray[x].maxValue){
           screenRedCount = 5;
         }
       }
