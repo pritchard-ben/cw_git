@@ -1,4 +1,3 @@
-//asdadada
 #include <Wire.h>
 #include <Adafruit_RGBLCDShield.h>
 #include <utility/Adafruit_MCP23017.h>
@@ -13,8 +12,15 @@
 //each of the states simply appends data to the correct location in memory for later access
 
 // can implement a class to store the data, may be better
-
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
+
+struct channel {
+  char ID;
+  char[16] description;
+  int value;
+  int minValue;
+  int maxValue;
+}
 
 void setup() {
   lcd.begin(16,2);
