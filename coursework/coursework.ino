@@ -29,7 +29,7 @@ enum state_e { SYNCHRONISATION = 3, INITIALISATION, WAITING, NEW_CHANNEL, VALUE,
 enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for pressing the buttons
 
 //static String channelArray[26];//global declaration of the array and the colours for the screen
-static channel newChannelArray[26];
+static channel channelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
 
@@ -58,18 +58,18 @@ void updateDisplay(int channelArrayLength,int topDisplay){
   String dispVal;
   if(channelArrayLength == 1){ // if one value in array
     lcd.setCursor(1,0);
-    if(newChannelArray[topDisplay].value > 99){
-      dispVal = (String)newChannelArray[topDisplay].value;
-    }else if(newChannelArray[topDisplay].value > 9){
-      dispVal =  " " + (String)newChannelArray[topDisplay].value;
+    if(channelArray[topDisplay].value > 99){
+      dispVal = (String)channelArray[topDisplay].value;
+    }else if(channelArray[topDisplay].value > 9){
+      dispVal =  " " + (String)channelArray[topDisplay].value;
     }else{
-      dispVal = "  " + (String)newChannelArray[topDisplay].value;
+      dispVal = "  " + (String)channelArray[topDisplay].value;
     }
     Serial.println('-'+dispVal+'-');
     /*Serial.println("DEBUG: " + (String) channelArrayLength);
     Serial.println("DEBUG: " + (String) topDisplay);*/
-    lcd.print(newChannelArray[topDisplay].id);
-    if (newChannelArray[topDisplay].value > -1){
+    lcd.print(channelArray[topDisplay].id);
+    if (channelArray[topDisplay].value > -1){
       lcd.print(dispVal);
     }else{
       lcd.print("   ");
@@ -77,30 +77,30 @@ void updateDisplay(int channelArrayLength,int topDisplay){
   }else if(channelArrayLength > 1){ // if two values
     //copy above, but include two lines (topDisplay and topDisplay + 1)
     lcd.setCursor(1,0);
-    if(newChannelArray[topDisplay].value > 99){
-      dispVal = (String)newChannelArray[topDisplay].value;
-    }else if(newChannelArray[topDisplay].value > 9){
-      dispVal =  " " + (String)newChannelArray[topDisplay].value;
+    if(channelArray[topDisplay].value > 99){
+      dispVal = (String)channelArray[topDisplay].value;
+    }else if(channelArray[topDisplay].value > 9){
+      dispVal =  " " + (String)channelArray[topDisplay].value;
     }else{
-      dispVal = "  " + (String)newChannelArray[topDisplay].value;
+      dispVal = "  " + (String)channelArray[topDisplay].value;
     }
     String dispVal2;
-    if(newChannelArray[topDisplay + 1].value > 99){
-      dispVal2 = (String)newChannelArray[topDisplay + 1].value;
-    }else if(newChannelArray[topDisplay + 1].value > 9){
-      dispVal2 =  " " + (String)newChannelArray[topDisplay + 1].value;
+    if(channelArray[topDisplay + 1].value > 99){
+      dispVal2 = (String)channelArray[topDisplay + 1].value;
+    }else if(channelArray[topDisplay + 1].value > 9){
+      dispVal2 =  " " + (String)channelArray[topDisplay + 1].value;
     }else{
-      dispVal2 = "  " + (String)newChannelArray[topDisplay + 1].value;
+      dispVal2 = "  " + (String)channelArray[topDisplay + 1].value;
     }
-    lcd.print(newChannelArray[topDisplay].id);
-    if (newChannelArray[topDisplay].value > -1){
+    lcd.print(channelArray[topDisplay].id);
+    if (channelArray[topDisplay].value > -1){
       lcd.print(dispVal);
     }else{
       lcd.print("   ");
     }
     lcd.setCursor(1,1);
-    lcd.print(newChannelArray[topDisplay + 1].id);
-    if (newChannelArray[topDisplay + 1].value > -1){
+    lcd.print(channelArray[topDisplay + 1].id);
+    if (channelArray[topDisplay + 1].value > -1){
       lcd.print(dispVal2);
     }else{
       lcd.print("   ");
@@ -119,11 +119,11 @@ void updateDisplay(int channelArrayLength,int topDisplay){
   }
 
   for (int x = 0; x < channelArrayLength; x++){
-    if (newChannelArray[x].maxValue >= newChannelArray[x].minValue){ // determine whether to change the colour of the display, colour will be changed until 5 new values hae been entered
-      if (newChannelArray[x].value != -1){
-        if (newChannelArray[x].value < newChannelArray[x].minValue){
+    if (channelArray[x].maxValue >= channelArray[x].minValue){ // determine whether to change the colour of the display, colour will be changed until 5 new values hae been entered
+      if (channelArray[x].value != -1){
+        if (channelArray[x].value < channelArray[x].minValue){
           screenGreenCount = 5;
-        }else if(newChannelArray[x].value > newChannelArray[x].maxValue){
+        }else if(channelArray[x].value > channelArray[x].maxValue){
           screenRedCount = 5;
         }
       }
@@ -283,44 +283,34 @@ void loop() {
       {
         Serial.println("DEBUG: NEW_CHANNEL");
         //Serial.println("-" + message + "-");
-        String newChannel = "                     0255";//if not in array use this, if in array overwrite new description
-        newChannel[0] = message[1];                     //onto the values stored in the array 
-        channel newChan;
-        newChan.id = message[1];
-        //Serial.println("-"+newChannel+"-");
+        channel newChannel;
+        newChannel.id = message[1];
         int messageLen = message.length();
         if (messageLen > 15){ // descriptions longer than 15 characters are ignored
           messageLen = 15;  
         }
-                
-        //Serial.println("-"+newChannel+"-");
 
         bool inArray = false;
         // search array and if in array, overwrite description
         for (int x = 0; x < 26; x++){
-          if(newChannelArray[x].id == newChan.id){
-            newChan.value = newChannelArray[x].value;
-            newChan.maxValue = newChannelArray[x].maxValue;
-            newChan.minValue = newChannelArray[x].minValue;
+          if(channelArray[x].id == newChannel.id){
+            newChannel.value = channelArray[x].value;
+            newChannel.maxValue = channelArray[x].maxValue;
+            newChannel.minValue = channelArray[x].minValue;
             inArray = true;
             for(int y = 2; y < messageLen - 1; y++){
-              newChan.description[y-2] = message[y];
+              newChannel.description[y-2] = message[y];
             }
-            newChannelArray[x] = newChan;
+            channelArray[x] = newChannel;
             
           }
         }
-
-        // if not in array append "newChannel" string as defined above to the array
         if (inArray == false){ 
-          for (int y = 1; y < messageLen - 1 ; y++){
-            newChannel[y-1] = message[y];
-          }
           for (int y = 2; y < messageLen - 1; y++){
-            newChan.description[y-2] = message[y];
+            newChannel.description[y-2] = message[y];
           }
           //Serial.println("DEBUG: " + (String)channelArrayLength);
-          newChannelArray[channelArrayLength] = newChan;
+          channelArray[channelArrayLength] = newChannel;
           channelArrayLength ++;
         }
 
@@ -329,24 +319,24 @@ void loop() {
 
         for (int x = 0; x < channelArrayLength; x++){
           for (int y = 0; y < channelArrayLength - 1; y++){
-            if (newChannelArray[y].id > newChannelArray[y+1].id){
-              channel tempChan = newChannelArray[y+1];
-              newChannelArray[y+1] = newChannelArray[y];
-              newChannelArray[y] = tempChan;
+            if (channelArray[y].id > channelArray[y+1].id){
+              channel tempChan = channelArray[y+1];
+              channelArray[y+1] = channelArray[y];
+              channelArray[y] = tempChan;
             }
           }
         }
         
         for (int x = 0; x < channelArrayLength; x++){
-          Serial.println("DEBUG: " + (String)newChannelArray[x].id);
+          Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
           for (int y = 0; y<15; y++){
-            Serial.print(newChannelArray[x].description[y]);
+            Serial.print(channelArray[x].description[y]);
           }
           Serial.println();
-          Serial.println("DEBUG: " + (String)newChannelArray[x].value);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].maxValue);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].minValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].value);
+          Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].minValue);
         }
         Serial.println(channelArrayLength);
         
@@ -361,11 +351,11 @@ void loop() {
         for (unsigned x=2; x < message.length() - 1;x++){
           newVal = newVal + message[x];
         }
-        int nVal = newVal.toInt();
+        int intVal = newVal.toInt();
         //Serial.println("-"+newVal+"-");
 
         //ignore if the value is outside the range 0 - 255
-        if(newVal.toInt() < 0 or newVal.toInt() > 255){
+        if(intVal < 0 or intVal > 255){
           state = WAITING;
           break;
         }
@@ -374,7 +364,7 @@ void loop() {
         char chan = message[1];
         
         for (int x = 0; x < 26; x++){
-          if (newChannelArray[x].id == chan){// if the channel has been initialised replace the contents of the channel with this, if not ignore
+          if (channelArray[x].id == chan){// if the channel has been initialised replace the contents of the channel with this, if not ignore
             Serial.println("Found channel");
             //reduce the timers for the display colour coding based on recent values
             if (screenRedCount > 0){
@@ -384,19 +374,19 @@ void loop() {
               screenGreenCount--;
             }
             //right-pad the values as being stored
-            newChannelArray[x].value = nVal;
+            channelArray[x].value = intVal;
           }
         }
         for (int x = 0; x < channelArrayLength; x++){
-          Serial.println("DEBUG: " + (String)newChannelArray[x].id);
+          Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
           for (int y = 0; y<15; y++){
-            Serial.print(newChannelArray[x].description[y]);
+            Serial.print(channelArray[x].description[y]);
           }
           Serial.println();
-          Serial.println("DEBUG: " + (String)newChannelArray[x].value);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].maxValue);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].minValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].value);
+          Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].minValue);
         }
          
         /*//debugging the array
@@ -416,10 +406,10 @@ void loop() {
         for (unsigned x=2; x < message.length() - 1;x++){
           newMax = newMax + message[x];
         }
-        int nMax = newMax.toInt();
+        int intMax = newMax.toInt();
         //Serial.println(newMax);
         // if max outside 0-255 range then ignore
-        if(newMax.toInt() < 0 or newMax.toInt() > 255){
+        if(intMax < 0 or intMax > 255){
           state = WAITING;
           break;
         }
@@ -428,22 +418,22 @@ void loop() {
         char chan = message[1];
 
         for (int x = 0; x < 26; x++){
-          if (newChannelArray[x].id == chan){ //if channel has been initialised
+          if (channelArray[x].id == chan){ //if channel has been initialised
             Serial.println("Found channel");
-            newChannelArray[x].maxValue = nMax;
+            channelArray[x].maxValue = intMax;
             }
         }
         
         for (int x = 0; x < channelArrayLength; x++){
-          Serial.println("DEBUG: " + (String)newChannelArray[x].id);
+          Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
           for (int y = 0; y<15; y++){
-            Serial.print(newChannelArray[x].description[y]);
+            Serial.print(channelArray[x].description[y]);
           }
           Serial.println();
-          Serial.println("DEBUG: " + (String)newChannelArray[x].value);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].maxValue);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].minValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].value);
+          Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].minValue);
         }
         
         state = WAITING;
@@ -458,10 +448,10 @@ void loop() {
         for (unsigned x=2;x < message.length() - 1;x++){
           newMin = newMin + message[x];
         }
-        int nMin = newMin.toInt();
+        int intMin = newMin.toInt();
         //Serial.println(newMin);
 
-        if(newMin.toInt() < 0 or newMin.toInt() > 255){// ignore if outside range
+        if(intMin < 0 or intMin > 255){// ignore if outside range
           state = WAITING;
           break;
         }
@@ -470,22 +460,22 @@ void loop() {
         char chan = message[1];
         
         for (int x = 0; x < 26; x++){ // change 26 to channelArrayNumber
-          if (newChannelArray[x].id == chan){ // if channel has been initialised
+          if (channelArray[x].id == chan){ // if channel has been initialised
             Serial.println("Found channel");
-            newChannelArray[x].minValue = nMin;
+            channelArray[x].minValue = intMin;
           }
         }
         
         for (int x = 0; x < channelArrayLength; x++){
-          Serial.println("DEBUG: " + (String)newChannelArray[x].id);
+          Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
           for (int y = 0; y<15; y++){
-            Serial.print(newChannelArray[x].description[y]);
+            Serial.print(channelArray[x].description[y]);
           }
           Serial.println();
-          Serial.println("DEBUG: " + (String)newChannelArray[x].value);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].maxValue);
-          Serial.println("DEBUG: " + (String)newChannelArray[x].minValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].value);
+          Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
+          Serial.println("DEBUG: " + (String)channelArray[x].minValue);
         }
         
         state = WAITING;
