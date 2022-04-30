@@ -245,7 +245,7 @@ void loop() {
           }
         }
         static int pressed;
-        static int updown;
+        //static int updown;
         
         static state_b buttonState = WAITING_PRESS; //initialise button states
 
@@ -278,9 +278,10 @@ void loop() {
                   selectDisplay();
                   buttonState = WAITING_RELEASE; //wait for button to be released
                 }
-                updown = pressed;
+                //updown = pressed;
                 //}
-              }           
+              }
+              break;           
             }
           case WAITING_RELEASE: // when select is pressed currently
             {
