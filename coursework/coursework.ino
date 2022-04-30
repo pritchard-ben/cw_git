@@ -3,7 +3,6 @@
 #include <utility/Adafruit_MCP23017.h>
 
 //todo:
-//rename nVal to newVal etc for val, min, max
 //streamline code
 
 //---------------------------
@@ -142,7 +141,6 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       lcd.setBacklight(7);//white
     }
   }
-  
 }
 
 void selectDisplay(){ // changes the display when "select" button is pressed
