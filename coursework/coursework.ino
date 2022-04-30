@@ -32,6 +32,25 @@ static channel channelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
 
+//code sourced from lab worksheet 3, returns the free memory that the arduino has
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else // __ARM__
+extern char *__brkval;
+#endif // __arm__
+
+int freeMemory() {
+char top;
+#ifdef __arm__
+return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+return &top - __brkval;
+#else // __arm__
+return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif // __arm__
+}
+
 //handles the placement of v and ^ for scrolling
 void atTop(){ 
   lcd.setCursor(0,0);
@@ -149,6 +168,8 @@ void selectDisplay(){ // changes the display when "select" button is pressed
   lcd.print("F128493         ");
   lcd.setCursor(0,1);
   lcd.print("                ");
+  lcd.setCursor(0,1);
+  lcd.print(freeMemory()); // outputs the amount of free ram to the select button interface ---------------------------------------
   }
 void wipeDisplay(){ // clears the display upon releasing the select button, sets colour back to white
   lcd.setCursor(0,0);
@@ -271,7 +292,7 @@ void loop() {
       }
     case INITIALISATION:// This initialises the arduino, providing the backlight
       {
-        Serial.println("BASIC");
+        Serial.println("FREERAM"); // update with all extension tasks --------------------------------------------------
         lcd.setBacklight(7);
         channelArrayLength = 0; //initialise length of channel array here
         state = WAITING;
