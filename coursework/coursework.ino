@@ -17,11 +17,36 @@ struct channel {
   int maxValue = 255;
 };
 
+// definition of arrow characters for UI --------------------------------------------------------------------------------
+byte upArrow[8] = {
+  B00100,
+  B01110,
+  B11111,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+};
+
+byte downArrow[8] = {
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B00100,
+  B11111,
+  B01110,
+  B00100,
+};
+
 void setup() {
   lcd.begin(16,2);
   lcd.setBacklight(7);
   lcd.clear();
   Serial.begin(9600);
+  lcd.createChar(0, upArrow);
+  lcd.createChar(1, downArrow);
 }
 
 enum state_e { SYNCHRONISATION = 3, INITIALISATION, WAITING, NEW_CHANNEL, VALUE, MAX, MIN }; // the main states
@@ -32,7 +57,7 @@ static channel channelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
 
-//code sourced from lab worksheet 3, returns the free memory that the arduino has
+//code sourced from lab worksheet 3, returns the free memory that the arduino has --------------------------------------------
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char* sbrk(int incr);
@@ -51,27 +76,27 @@ return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif // __arm__
 }
 
-//handles the placement of v and ^ for scrolling
+//handles the displaying of arrows for scrolling
 void atTop(){ 
   lcd.setCursor(0,0);
   lcd.print(' ');
   lcd.setCursor(0,1);
-  lcd.print('v');
+  lcd.write(byte(1));
 }
 void atBtm(){
   lcd.setCursor(0,0);
-  lcd.print('^');
+  lcd.write(byte(0));
   lcd.setCursor(0,1);
   lcd.print(' ');
 }
 void inMiddle(){
   lcd.setCursor(0,0);
-  lcd.print('^');
+  lcd.write(byte(0));
   lcd.setCursor(0,1);
-  lcd.print('v');
+  lcd.write(byte(1));
 }
 
-//updates the diaply with current values
+//updates the disply with current values
 void updateDisplay(int channelArrayLength,int topDisplay){
   String dispVal;
   if(channelArrayLength == 1){ // if one value in array
@@ -292,7 +317,7 @@ void loop() {
       }
     case INITIALISATION:// This initialises the arduino, providing the backlight
       {
-        Serial.println("FREERAM"); // update with all extension tasks --------------------------------------------------
+        Serial.println("UDCHARS, FREERAM"); // update with all extension tasks -------------------------------------------------------
         lcd.setBacklight(7);
         channelArrayLength = 0; //initialise length of channel array here
         state = WAITING;
