@@ -6,6 +6,10 @@
 //streamline code
 
 //---------------------------
+//UDCHARS: 24
+//FREERAM: 64, 213
+//NAMES: 124, 152, 163
+//---------------------------
 
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
@@ -117,7 +121,11 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       lcd.print("   ");
     }
-  }else if(channelArrayLength > 1){ // if two values
+    lcd.print(" ");// displaying name--------------------------------------------------------------------------
+    for (int x = 0; x < 10; x++){
+      lcd.print(channelArray[topDisplay].description[x]);
+    }
+  }else if(channelArrayLength > 1){ // if two values or more
     //copy above, but include two lines (topDisplay and topDisplay + 1)
     lcd.setCursor(1,0);
     if(channelArray[topDisplay].value > 99){
@@ -141,12 +149,20 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       lcd.print("   ");
     }
+    lcd.print(" ");// displaying name--------------------------------------------------------------------------
+    for (int x = 0; x < 10; x++){
+      lcd.print(channelArray[topDisplay].description[x]);
+    }
     lcd.setCursor(1,1);
     lcd.print(channelArray[topDisplay + 1].id);
     if (channelArray[topDisplay + 1].value > -1){
       lcd.print(dispVal2);
     }else{
       lcd.print("   ");
+    }
+    lcd.print(" ");// displaying name--------------------------------------------------------------------------
+    for (int x = 0; x < 10; x++){
+      lcd.print(channelArray[topDisplay + 1].description[x]);
     }
   }
 
@@ -318,7 +334,7 @@ void loop() {
       }
     case INITIALISATION:// This initialises the arduino, providing the backlight
       {
-        Serial.println("UDCHARS, FREERAM"); // update with all extension tasks -------------------------------------------------------
+        Serial.println("UDCHARS, FREERAM, NAMES"); // update with all extension tasks -------------------------------------------------------
         lcd.setBacklight(7);
         channelArrayLength = 0; //initialise length of channel array here
         state = WAITING;
