@@ -9,6 +9,7 @@
 //UDCHARS: 24
 //FREERAM: 64, 213
 //NAMES: 124, 152, 163
+//SCROLL: 132, 186, 222
 //---------------------------
 
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
@@ -60,6 +61,12 @@ enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for pressing the 
 static channel channelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
+static bool needScroll1;
+static bool needScroll2;
+static unsigned long now1 = millis();
+static unsigned long now2 = millis();
+static int scrollCount1;
+static int scrollCount2;
 
 //code sourced from lab worksheet 3, returns the free memory that the arduino has --------------------------------------------
 #ifdef __arm__
@@ -122,9 +129,34 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       lcd.print("   ");
     }
     lcd.print(" ");// displaying name--------------------------------------------------------------------------
-    for (int x = 0; x < 10; x++){
-      lcd.print(channelArray[topDisplay].description[x]);
+    //this will determine whether the name is long enough to require scrolling
+    needScroll1 = false;
+    for (int y = 10; y < 15; y++){
+      if (channelArray[topDisplay].description[y] != ' '){
+        needScroll1 = true;
+      }
     }
+    if (needScroll1 == true){
+      //Serial.println("Needs to scroll");
+      //now = millis();
+      if(scrollCount1 > 5){
+        scrollCount1 = 0;
+      }
+      
+      for (int x = 0; x < 10; x++){
+        lcd.write(channelArray[topDisplay].description[x+scrollCount1]);
+      }
+      if (millis() - now1 > 500){
+        scrollCount1++;
+        now1 = millis();
+      }
+      
+    }else{
+      for (int x = 0; x < 10; x++){
+        lcd.print(channelArray[topDisplay].description[x]);
+      } 
+    }
+    
   }else if(channelArrayLength > 1){ // if two values or more
     //copy above, but include two lines (topDisplay and topDisplay + 1)
     lcd.setCursor(1,0);
@@ -150,9 +182,35 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       lcd.print("   ");
     }
     lcd.print(" ");// displaying name--------------------------------------------------------------------------
-    for (int x = 0; x < 10; x++){
-      lcd.print(channelArray[topDisplay].description[x]);
+    
+    needScroll1 = false;// determines if top half needs to scroll
+    for (int y = 10; y < 15; y++){
+      if (channelArray[topDisplay].description[y] != ' '){
+        needScroll1 = true;
+      }
     }
+    if (needScroll1 == true){
+      Serial.println("Needs to scroll");
+      //now1 = millis();
+      if(scrollCount1 > 5){//5 chars don't fit
+        scrollCount1 = 0;
+      }
+      
+      for (int x = 0; x < 10; x++){
+        lcd.write(channelArray[topDisplay].description[x+scrollCount1]);
+      }
+      if (millis() - now1 > 500){
+        scrollCount1++;
+        now1 = millis();
+      }
+      
+    }else{
+      for (int x = 0; x < 10; x++){
+        lcd.print(channelArray[topDisplay].description[x]);
+      } 
+    }
+    
+  
     lcd.setCursor(1,1);
     lcd.print(channelArray[topDisplay + 1].id);
     if (channelArray[topDisplay + 1].value > -1){
@@ -161,8 +219,31 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       lcd.print("   ");
     }
     lcd.print(" ");// displaying name--------------------------------------------------------------------------
-    for (int x = 0; x < 10; x++){
-      lcd.print(channelArray[topDisplay + 1].description[x]);
+    needScroll2 = false;// determines if top half needs to scroll
+    for (int y = 10; y < 15; y++){
+      if (channelArray[topDisplay + 1].description[y] != ' '){
+        needScroll2 = true;
+      }
+    }
+    if (needScroll2 == true){
+      Serial.println("Needs to scroll");
+      //now2 = millis();
+      if(scrollCount2 > 5){//5 chars don't fit
+        scrollCount2 = 0;
+      }
+      
+      for (int x = 0; x < 10; x++){
+        lcd.write(channelArray[topDisplay + 1].description[x+scrollCount2]);
+      }
+      if (millis() - now2 > 500){
+        scrollCount2++;
+        now2 = millis();
+      }
+      
+    }else{
+      for (int x = 0; x < 10; x++){
+        lcd.print(channelArray[topDisplay + 1].description[x]);
+      } 
     }
   }
 
@@ -227,6 +308,7 @@ void loop() {
   static state_e state = SYNCHRONISATION; //initialise main states
   static String oldMessage;
   static int channelArrayLength;
+
   
   static int lastButton = 0;
   static int topDisplay = 0;
@@ -269,6 +351,7 @@ void loop() {
           case WAITING_PRESS: //while waiting for a button to be pressed or pressing up or down
             {
               updateDisplay(channelArrayLength, topDisplay);
+              
               int button = lcd.readButtons();
               //if pressed now and it wasnt earlier
               pressed = button & ~lastButton;
@@ -334,7 +417,7 @@ void loop() {
       }
     case INITIALISATION:// This initialises the arduino, providing the backlight
       {
-        Serial.println("UDCHARS, FREERAM, NAMES"); // update with all extension tasks -------------------------------------------------------
+        Serial.println("UDCHARS, FREERAM, NAMES, SCROLL"); // update with all extension tasks -------------------------------------------------------
         lcd.setBacklight(7);
         channelArrayLength = 0; //initialise length of channel array here
         state = WAITING;
@@ -347,8 +430,8 @@ void loop() {
         channel newChannel;
         newChannel.id = message[1];
         int messageLen = message.length();
-        if (messageLen > 15){ // descriptions longer than 15 characters are ignored
-          messageLen = 15;  
+        if (messageLen > 18){ // descriptions longer than 15 characters are ignored
+          messageLen = 18;  
         }
 
         bool inArray = false;
@@ -386,7 +469,8 @@ void loop() {
               channelArray[y] = tempChan;
             }
           }
-        }
+        }   
+        
         
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + (String)channelArray[x].id);
