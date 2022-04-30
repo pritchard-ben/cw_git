@@ -169,7 +169,7 @@ void selectDisplay(){ // changes the display when "select" button is pressed
   lcd.setCursor(0,1);
   lcd.print("                ");
   lcd.setCursor(0,1);
-  lcd.print(freeMemory()); // outputs the amount of free ram to the select button interface ---------------------------------------
+  lcd.print("FREE: " + (String)freeMemory()); // outputs the amount of free ram to the select button interface ---------------------------------------
   }
 void wipeDisplay(){ // clears the display upon releasing the select button, sets colour back to white
   lcd.setCursor(0,0);
