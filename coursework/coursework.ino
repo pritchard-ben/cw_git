@@ -50,7 +50,7 @@ void setup() {
   lcd.setBacklight(7);
   lcd.clear();
   Serial.begin(9600);
-  Serial.setTimeout(1);
+  Serial.setTimeout(5);
   lcd.createChar(0, upArrow);
   lcd.createChar(1, downArrow);
 }
@@ -120,7 +120,7 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       dispVal = "  " + (String)channelArray[topDisplay].value;
     }
-    Serial.println('-'+dispVal+'-');
+    //Serial.println('-'+dispVal+'-');
     /*Serial.println("DEBUG: " + (String) channelArrayLength);
     Serial.println("DEBUG: " + (String) topDisplay);*/
     lcd.print(channelArray[topDisplay].id);
@@ -322,6 +322,7 @@ void loop() {
         //Serial.println("Waiting message");
         message = "";
         message = Serial.readString(); // get message from serial monitor
+        
         
         if (oldMessage){
           if (message != "-1"){ // if the message is valid
