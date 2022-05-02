@@ -50,6 +50,7 @@ void setup() {
   lcd.setBacklight(7);
   lcd.clear();
   Serial.begin(9600);
+  Serial.setTimeout(1);
   lcd.createChar(0, upArrow);
   lcd.createChar(1, downArrow);
 }
@@ -190,7 +191,7 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       }
     }
     if (needScroll1 == true){
-      Serial.println("Needs to scroll");
+      //Serial.println("Needs to scroll");
       //now1 = millis();
       if(scrollCount1 > 5){//5 chars don't fit
         scrollCount1 = 0;
@@ -226,7 +227,7 @@ void updateDisplay(int channelArrayLength,int topDisplay){
       }
     }
     if (needScroll2 == true){
-      Serial.println("Needs to scroll");
+      //Serial.println("Needs to scroll");
       //now2 = millis();
       if(scrollCount2 > 5){//5 chars don't fit
         scrollCount2 = 0;
