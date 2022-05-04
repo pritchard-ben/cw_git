@@ -58,7 +58,7 @@ void setup() {
 enum state_e { SYNCHRONISATION = 3, INITIALISATION, WAITING, NEW_CHANNEL, VALUE, MAX, MIN }; // the main states
 enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for pressing the buttons
 
-//static String channelArray[26];//global declaration of the array and the colours for the screen
+//global declaration of the array and the colours for the screen
 static channel channelArray[26];
 static int screenRedCount = 0;
 static int screenGreenCount = 0;
@@ -335,6 +335,7 @@ void loop() {
         //Serial.println("Waiting message");
         message = "";
         message = Serial.readString(); // get message from serial monitor
+        //Serial.println(message.length());
         
         
         if (oldMessage){
@@ -342,13 +343,13 @@ void loop() {
             protocol = message[0];
             if(protocol == 'C'){
               state = NEW_CHANNEL;
-            }else if(protocol == 'V'){
+            }else if(protocol == 'V' && (message.length() > 3)){
               oldMessage = message;
               state = VALUE;
-            }else if(protocol == 'X'){
+            }else if(protocol == 'X' && (message.length() > 3)){
               oldMessage = message;
               state = MAX;
-            }else if(protocol == 'N'){
+            }else if(protocol == 'N' && (message.length() > 3)){
               oldMessage = message;
               state = MIN;
             }else if(isAlpha(protocol)){ // if message doesn't fit protocol report error to user
@@ -358,6 +359,8 @@ void loop() {
           }
         }
         static int pressed;
+        static int startPress;
+        static bool screenChanged = false;
         
         static state_b buttonState = WAITING_PRESS; //initialise button states
 
@@ -370,6 +373,7 @@ void loop() {
               //if pressed now and it wasnt earlier
               pressed = button & ~lastButton;
               lastButton = button;
+              startPress = millis();
         
               //if(channelArrayLength > 2){
               if(pressed & (BUTTON_UP | BUTTON_DOWN | BUTTON_SELECT)){ // if a valid button has been pressed
@@ -387,8 +391,8 @@ void loop() {
                     updateDisplay(channelArrayLength, topDisplay);
                   }
                 }else{
-                  //if select, change display and state
-                  selectDisplay();
+                  //if select, change state
+                  screenChanged = false;
                   buttonState = WAITING_RELEASE; //wait for button to be released
                 }
               }
@@ -399,6 +403,11 @@ void loop() {
               int button = lcd.readButtons();
               int released = ~button & lastButton; // if the button is not currently being pressedAND it was the last button to be pressed
               lastButton = button;
+              if ((millis() - startPress  > 1000) & (screenChanged == false)){ 
+// if button has been pressed and not released for 1 sec, change display
+                selectDisplay();
+                screenChanged = true;//makes sure it changes once per press
+              }
               if (released & pressed){//when released wipe dislay and restore old values
                 wipeDisplay(); 
                 updateDisplay(channelArrayLength, topDisplay);
@@ -447,7 +456,7 @@ void loop() {
         }
 
         bool inArray = false;
-        // search array and if in array, overwrite description
+// search array ids and if channel id is in array, overwrite description
         for (int x = 0; x < 26; x++){
           if(channelArray[x].id == newChannel.id){
             newChannel.value = channelArray[x].value;
@@ -470,8 +479,8 @@ void loop() {
           channelArrayLength ++;
         }
 
-        //sorts the array so that it is in alphabetical order
-        //this is done after each addition to the array to ensure easy displaying of array contents
+//sorts the array so that it is in alphabetical order
+//this is done after each addition to the array to ensure easy displaying of array contents
 
         for (int x = 0; x < channelArrayLength; x++){
           for (int y = 0; y < channelArrayLength - 1; y++){
@@ -511,8 +520,9 @@ void loop() {
         int intVal = newVal.toInt();
         //Serial.println("-"+newVal+"-");
 
-        //ignore if the value is outside the range 0 - 255
+        //return error if the value is outside the range 0 - 255
         if(intVal < 0 or intVal > 255){
+          Serial.println("ERROR: " + message);
           state = WAITING;
           break;
         }
@@ -530,7 +540,6 @@ void loop() {
             if (screenGreenCount > 0){
               screenGreenCount--;
             }
-            //right-pad the values as being stored
             channelArray[x].value = intVal;
           }
         }
@@ -566,8 +575,9 @@ void loop() {
         }
         int intMax = newMax.toInt();
         //Serial.println(newMax);
-        // if max outside 0-255 range then ignore
+        // if max outside 0-255 range then return error
         if(intMax < 0 or intMax > 255){
+          Serial.println("ERROR: " + message);
           state = WAITING;
           break;
         }
@@ -609,7 +619,9 @@ void loop() {
         int intMin = newMin.toInt();
         //Serial.println(newMin);
 
-        if(intMin < 0 or intMin > 255){// ignore if outside range
+        if(intMin < 0 or intMin > 255){
+          // return error if outside range
+          Serial.println("ERROR: " + message);
           state = WAITING;
           break;
         }
