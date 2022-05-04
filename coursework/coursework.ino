@@ -56,7 +56,7 @@ void setup() {
 }
 
 enum state_e { SYNCHRONISATION = 3, INITIALISATION, WAITING, NEW_CHANNEL, VALUE, MAX, MIN }; // the main states
-enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for pressing the buttons
+enum state_b { WAITING_PRESS = 8, WAITING_RELEASE }; // states for operation of buttons
 
 //global declaration of the array and the colours for the screen
 static channel channelArray[26];
@@ -69,7 +69,7 @@ static unsigned long now2 = millis();
 static int scrollCount1;
 static int scrollCount2;
 
-//code sourced from lab worksheet 3, returns the free memory that the arduino has --------------------------------------------
+//code sourced from lab workshop 3, returns the free memory that the arduino has --------------------------------------------
 #ifdef __arm__
 // should use uinstd.h to define sbrk but Due causes a conflict
 extern "C" char* sbrk(int incr);
