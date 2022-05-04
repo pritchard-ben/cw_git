@@ -112,6 +112,7 @@ void inMiddle(){
 void updateDisplay(int channelArrayLength,int topDisplay){
   String dispVal;
   if(channelArrayLength == 1){ // if one value in array
+//displaying name and value
     lcd.setCursor(1,0);
     if(channelArray[topDisplay].value > 99){
       dispVal = (String)channelArray[topDisplay].value;
@@ -139,14 +140,15 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
     if (needScroll1 == true){
       //Serial.println("Needs to scroll");
-      //now = millis();
+// if it has scrolled along 5, reset to 0
       if(scrollCount1 > 5){
         scrollCount1 = 0;
       }
-      
+//write to lcd within range
       for (int x = 0; x < 10; x++){
         lcd.write(channelArray[topDisplay].description[x+scrollCount1]);
       }
+//scroll along one every half second
       if (millis() - now1 > 500){
         scrollCount1++;
         now1 = millis();
@@ -159,7 +161,8 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
     
   }else if(channelArrayLength > 1){ // if two values or more
-    //copy above, but include two lines (topDisplay and topDisplay + 1)
+//for top row
+//displaying id and value
     lcd.setCursor(1,0);
     if(channelArray[topDisplay].value > 99){
       dispVal = (String)channelArray[topDisplay].value;
@@ -168,6 +171,8 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       dispVal = "  " + (String)channelArray[topDisplay].value;
     }
+//for bottom row
+//displaying id and value
     String dispVal2;
     if(channelArray[topDisplay + 1].value > 99){
       dispVal2 = (String)channelArray[topDisplay + 1].value;
@@ -182,8 +187,8 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       lcd.print("   ");
     }
-    lcd.print(" ");// displaying name--------------------------------------------------------------------------
-    
+    lcd.print(" ");
+// displaying name for top row--------------------------------------------------------------------------    
     needScroll1 = false;// determines if top half needs to scroll
     for (int y = 10; y < 15; y++){
       if (channelArray[topDisplay].description[y] != ' '){
@@ -192,26 +197,27 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
     if (needScroll1 == true){
       //Serial.println("Needs to scroll");
-      //now1 = millis();
+//if scrolled along 5, reset to zero
       if(scrollCount1 > 5){//5 chars don't fit
         scrollCount1 = 0;
       }
-      
+//write to lcd within range      
       for (int x = 0; x < 10; x++){
         lcd.write(channelArray[topDisplay].description[x+scrollCount1]);
       }
+//scroll along one every half second
       if (millis() - now1 > 500){
         scrollCount1++;
         now1 = millis();
       }
-      
+//scroll along one every half second      
     }else{
       for (int x = 0; x < 10; x++){
         lcd.print(channelArray[topDisplay].description[x]);
       } 
     }
     
-  
+//displaying id and value
     lcd.setCursor(1,1);
     lcd.print(channelArray[topDisplay + 1].id);
     if (channelArray[topDisplay + 1].value > -1){
@@ -219,7 +225,8 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }else{
       lcd.print("   ");
     }
-    lcd.print(" ");// displaying name--------------------------------------------------------------------------
+    lcd.print(" ");
+// displaying name for bottom row--------------------------------------------------------------------------
     needScroll2 = false;// determines if top half needs to scroll
     for (int y = 10; y < 15; y++){
       if (channelArray[topDisplay + 1].description[y] != ' '){
@@ -228,14 +235,15 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
     if (needScroll2 == true){
       //Serial.println("Needs to scroll");
-      //now2 = millis();
+//if scrolled along 5, reset to zero
       if(scrollCount2 > 5){//5 chars don't fit
         scrollCount2 = 0;
       }
-      
+//write to lcd within range      
       for (int x = 0; x < 10; x++){
         lcd.write(channelArray[topDisplay + 1].description[x+scrollCount2]);
       }
+//scroll along one every half second
       if (millis() - now2 > 500){
         scrollCount2++;
         now2 = millis();
@@ -248,17 +256,21 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
   }
 
-  
-  if (channelArrayLength > 2){ // if more than two values (add v and ^ for scrolling)
-    if(topDisplay == 0){//if at top of the list
+//handles displaying of UD arrows if more than two values in the list
+  if (channelArrayLength > 2){
+    if(topDisplay == 0){
+//if at top of the list display down arrow
       atTop();
-    }else if((topDisplay + 2) == channelArrayLength){//if at bottom of the list
+    }else if((topDisplay + 2) == channelArrayLength){
+//if at bottom of the list display up arrow
       atBtm();
     }else{
+//if in middle of list display both arrows
       inMiddle();
     }
   }
 
+//changes colour of display accordingly, I used counters so the colour changes will timeout after sending 5 new values
   for (int x = 0; x < channelArrayLength; x++){
     if (channelArray[x].maxValue >= channelArray[x].minValue){ // determine whether to change the colour of the display, colour will be changed until 5 new values hae been entered
       if (channelArray[x].value != -1){
@@ -271,6 +283,7 @@ void updateDisplay(int channelArrayLength,int topDisplay){
     }
     //Serial.println("DEBUG: " + (String)screenGreenCount); // debugging the system for changing the colour of the display
     //Serial.println("DEBUG: " + (String)screenRedCount);
+//changing the colours
     if ((screenRedCount > 0) & (screenGreenCount > 0)){
       lcd.setBacklight(3); //yellow
     }
@@ -345,7 +358,6 @@ void loop() {
           }
         }
         static int pressed;
-        //static int updown;
         
         static state_b buttonState = WAITING_PRESS; //initialise button states
 
@@ -379,8 +391,6 @@ void loop() {
                   selectDisplay();
                   buttonState = WAITING_RELEASE; //wait for button to be released
                 }
-                //updown = pressed;
-                //}
               }
               break;           
             }
@@ -427,7 +437,7 @@ void loop() {
       }
     case NEW_CHANNEL:// When a 'C' is the first character, create a new channel or rename old
       {
-        Serial.println("DEBUG: NEW_CHANNEL");
+        //Serial.println("DEBUG: NEW_CHANNEL");
         //Serial.println("-" + message + "-");
         channel newChannel;
         newChannel.id = message[1];
@@ -473,7 +483,7 @@ void loop() {
           }
         }   
         
-        
+        /*
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
@@ -486,13 +496,13 @@ void loop() {
           Serial.println("DEBUG: " + (String)channelArray[x].minValue);
         }
         Serial.println(channelArrayLength);
-        
+        */
         state = WAITING;
         break;
       }
     case VALUE://  when a 'v' is detected
       {
-        Serial.println("DEBUG: VALUE");
+        //Serial.println("DEBUG: VALUE");
         //initalise a local value and give it a value
         String newVal;
         for (unsigned x=2; x < message.length() - 1;x++){
@@ -512,7 +522,7 @@ void loop() {
         
         for (int x = 0; x < 26; x++){
           if (channelArray[x].id == chan){// if the channel has been initialised replace the contents of the channel with this, if not ignore
-            Serial.println("Found channel");
+            //Serial.println("Found channel");
             //reduce the timers for the display colour coding based on recent values
             if (screenRedCount > 0){
               screenRedCount--;
@@ -524,6 +534,7 @@ void loop() {
             channelArray[x].value = intVal;
           }
         }
+        /*
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
@@ -534,7 +545,7 @@ void loop() {
           Serial.println("DEBUG: " + (String)channelArray[x].value);
           Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
           Serial.println("DEBUG: " + (String)channelArray[x].minValue);
-        }
+        }*/
          
         /*//debugging the array
         for (int x = 0; x < channelArrayLength; x++){
@@ -546,7 +557,7 @@ void loop() {
       }
     case MAX:// when an 'x' is detected
       {
-        Serial.println("DEBUG: MAX");
+        //Serial.println("DEBUG: MAX");
         
         //initialise a local variable for max and give it a value
         String newMax;
@@ -566,11 +577,11 @@ void loop() {
 
         for (int x = 0; x < 26; x++){
           if (channelArray[x].id == chan){ //if channel has been initialised
-            Serial.println("Found channel");
+            //Serial.println("Found channel");
             channelArray[x].maxValue = intMax;
             }
         }
-        
+        /*
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
@@ -581,14 +592,14 @@ void loop() {
           Serial.println("DEBUG: " + (String)channelArray[x].value);
           Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
           Serial.println("DEBUG: " + (String)channelArray[x].minValue);
-        }
+        }*/
         
         state = WAITING;
         break;
       } 
     case MIN:// when an 'n' is detected
       {
-        Serial.println("DEBUG: MIN");
+        //Serial.println("DEBUG: MIN");
 
         //create a local min variable and give it a value
         String newMin;
@@ -608,11 +619,11 @@ void loop() {
         
         for (int x = 0; x < 26; x++){ // change 26 to channelArrayNumber
           if (channelArray[x].id == chan){ // if channel has been initialised
-            Serial.println("Found channel");
+            //Serial.println("Found channel");
             channelArray[x].minValue = intMin;
           }
         }
-        
+        /*
         for (int x = 0; x < channelArrayLength; x++){
           Serial.println("DEBUG: " + (String)channelArray[x].id);
           Serial.print("DEBUG: ");
@@ -623,7 +634,7 @@ void loop() {
           Serial.println("DEBUG: " + (String)channelArray[x].value);
           Serial.println("DEBUG: " + (String)channelArray[x].maxValue);
           Serial.println("DEBUG: " + (String)channelArray[x].minValue);
-        }
+        }*/
         
         state = WAITING;
         break;
